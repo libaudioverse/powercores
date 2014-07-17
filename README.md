@@ -7,7 +7,7 @@ Note: This is definitely a work in progress and will develop alongside [Libaudio
 
 the purpose of this library is to provide some higher level primitives needed for [Libaudioverse](http://github.com/camlorn/libaudioverse).  While C++11 provides some lower-level features, the higher level abstractions are missing.  This library aims to fill that gap.
 
-But the most useful feature here is the task parallelizer.  A problem that recurs and one which must be solved for [Libaudioverse](http://github.com/camlorn/libaudioverse) is stated as follows.  Given N tasks and a list of dependencies between them, automatically determine an efficient way to run them across T threads.  To provide a concrete use case, Libaudioverse's parent-child relationships already form a dependency graph, which can be translated into this library's format as a "plan", and then executed.
+The most useful feature here is the task parallelizer.  A problem that recurs often and one which must be solved for [Libaudioverse](http://github.com/camlorn/libaudioverse) is stated as follows.  Given N tasks and a list of dependencies between them, automatically determine an efficient way to run them across T threads.  To provide a concrete example, Libaudioverse's parent-child relationships already form a dependency graph, which can be translated into this library's format as a "plan", and then executed.
 
 the name comes from the fact that it is easiest to represent tasks as lambdas and that the entire point of this library is being C++11.  Technically, anything with `operator()` will function as a task.
 
