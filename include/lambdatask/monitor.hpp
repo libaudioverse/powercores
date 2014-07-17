@@ -4,7 +4,7 @@ See LICENSE in the root of the Lambdatask repository for details.*/
 #include <memory>
 #include <utility>
 
-namespace lambdathread {
+namespace lambdatask {
 /**\brief A monitor, implementing the monitor pattern.
 
 Specifically, this has a `shared_ptr`-like interface: if `T` is a type, then `Monitor<t> foo;` is a monitor over a `T`.
@@ -30,7 +30,7 @@ class Monitor {
 	}
 
 	~Monitor() {
-		auto guard = std::lock_guard<std::mutex>(lock);  /It should not be possible for a monitor to be concurrently destructed and accessed, but let's provide some safety anyway.
+		auto guard = std::lock_guard<std::mutex>(lock);  //It should not be possible for a monitor to be concurrently destructed and accessed, but let's provide some safety anyway.
 		if(moved) return;
 		delete instance;
 	}
@@ -50,7 +50,7 @@ class Monitor {
 		//we need to make it impossible to store this anywhere no matter what.
 		//Also, impossible to make one outside a monitor.
 		//disable copying.
-		LockedMonitor(const lockedMonitor& other) = delete;
+		LockedMonitor(const LockedMonitor& other) = delete;
 		LockedMonitor& operator=(const LockedMonitor& other) = delete;
 		//and disable moving.
 		LockedMonitor(LockedMonitor&& other) = delete;	
@@ -60,23 +60,25 @@ class Monitor {
 
 		//the only way for the constructed instance to be constructed is to hold the lock.
 		T* operator->() {
-			return managed_pointer;
+			return managed_ptr;
 		}
 
 		private:
 		//it's enough just to construct these: the lock_guard will hold the lock for us.
-		LockedMonitor(T* m, std::mutex& lock): managed_pointer(m), guard(lock) { }
-		std::unique_lock<std::mutex>>  guard;
+		LockedMonitor(T* m, std::mutex& lock): managed_ptr(m), guard(lock) { }
+		std::unique_lock<std::mutex>  guard;
 		T* managed_ptr;
+		friend Monitor<T>;
 	};
 
 	LockedMonitor&& operator->() {
-		return std::move(lockedMonitor(instance, lock));
+		return std::move(LockedMonitor(instance, lock));
 	}
 
 	private:
 	T* instance;
 	std::mutex lock;
+	bool moved  = false;
 };
 
 }

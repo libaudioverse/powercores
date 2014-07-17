@@ -4,6 +4,7 @@ See LICENSE in the root of the Lambdatask repository for details.*/
 #include <atomic>
 #include <thread>
 #include <chrono>
+#include <vector>
 #include <stdio.h>
 
 //test configuration values.
@@ -27,7 +28,7 @@ lambdatask::Monitor<Counter> mon;
 std::atomic<unsigned int> atom;
 
 void test_fast_thread() {
-	for(unsigned int i = 0; i < times; i+) {
+	for(unsigned int i = 0; i < times; i++) {
 		mon->count(0);
 		atom.fetch_add(1);
 	}
@@ -40,9 +41,9 @@ void test_slow_thread() {
 	}
 }
 
-bool verify_passed() {
+bool verify() {
 	unsigned int atomic_value = atom.load();
-	unsigned int monitor_value = monitor->val;
+	unsigned int monitor_value = mon->val;
 	return (atomic_value == monitor_value) && atomic_value == (times*threads);
 }
 
@@ -57,8 +58,8 @@ bool do_test_fast() {
 	for(unsigned int i = 0; i < threads; i++) {
 		ts.emplace_back(test_fast_thread);
 	}
-	for(auto t: ts) {
-		t.join();
+	for(unsigned int i = 0; i < ts.size(); i++) {
+		ts[i].join();
 	}
 	return verify();
 }
@@ -69,22 +70,22 @@ bool do_test_slow() {
 	for(unsigned int i = 0; i < threads; i++) {
 		ts.emplace_back(test_slow_thread);
 	}
-	for(auto t: ts) {
-		t.join();
+	for(unsigned int i = 0; i < ts.size(); i++) {
+		ts[i].join();
 	}
 	return verify();
+}
 
 void main() {
 	printf("Running fast test...\n");
 	if(do_test_fast() == false) {
 		printf("failed\n");
-r	eturn;
+	return;
 	}
 	printf("Fast test passed.  Doing slow test...\n");
-	if(do_slow_test() == false) {
+	if(do_test_slow() == false) {
 	printf("Slow test failed.\n");
 	return;
-	
-	printf("Slow test passed.\n");
+		printf("Slow test passed.\n");
 }
 }

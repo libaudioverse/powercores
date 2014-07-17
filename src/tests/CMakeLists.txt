@@ -1,4 +1,5 @@
 macro(test name)
-add_executable(${name} ${name.cpp})
+add_executable(${name} ${name}.cpp)
+SET_PROPERTY(TARGET ${name} PROPERTY RUNTIME_OUTPUT_DIRECTORY  "${CMAKE_BINARY_DIR}/tests")
 endmacro()
-test(test_monitr)
+test(test_monitor)
