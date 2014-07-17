@@ -65,14 +65,14 @@ class Monitor {
 
 		private:
 		//it's enough just to construct these: the lock_guard will hold the lock for us.
-		LockedMonitor(T* m, std::mutex& lock): managed_ptr(m), guard(lock) { }
+		LockedMonitor(T* m, std::mutex& lock): managed_ptr(m), guard(lock) {}
 		std::unique_lock<std::mutex>  guard;
 		T* managed_ptr;
 		friend Monitor<T>;
 	};
 
-	LockedMonitor&& operator->() {
-		return std::move(LockedMonitor(instance, lock));
+	LockedMonitor operator->() {
+		return LockedMonitor(instance, lock);
 	}
 
 	private:

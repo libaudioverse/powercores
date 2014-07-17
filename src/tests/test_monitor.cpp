@@ -8,10 +8,10 @@ See LICENSE in the root of the Lambdatask repository for details.*/
 #include <stdio.h>
 
 //test configuration values.
-const unsigned int times = 10000;
-const unsigned int threads = 1000;
+const unsigned int times = 1000;
+const unsigned int threads = 100;
 //time to sleep for the slow test.
-const unsigned int sleep_time = 5;
+const unsigned int sleep_time = 1;
 class Counter {
 	public:
 	void count(int t) {
