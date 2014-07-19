@@ -9,7 +9,7 @@ namespace lambdatask {
 
 Specifically, this has a `shared_ptr`-like interface: if `T` is a type, then `Monitor<t> foo;` is a monitor over a `T`.
 
-Access to the monitor `foo` is done as follows: `foo->bar()`.  Only one thread may be in the monitor at a time.  If another thread were to call `foo->qux()` while `foo->bar()` is still executing, it will be blocked until `foo->bar()` finishes.
+Access to the monitor `foo` is done as follows: `foo->bar()`.  Only one thread may be in the monitor at a time.  If another thread were to call `foo->qux()` while `foo->bar()` is still executing, it will be blocked until `foo->bar()` finishes (but see notes below).
 
 This class does not support `operator*`, merely `operator->`.  Furthermore, monitors are not copyable.
 
@@ -21,6 +21,12 @@ The constraints on `T` are as follows:
 - `T` must be a class type.  Do not use pointers or classes that overload `operator->`.  Neither of these will work as expected.
 
 - If Monitor<t> is default-constructed, then `T` must also be default-constructible.
+
+notes:
+
+- Monitors rely on a trick. Because of this, the lock will be held until the end of the current expression.  Be careful when using the results of functions called on a monitor as parameters to blocking functions; it is safest to always assign results to temporaries.
+
+- Monitors do not currently support the `*` operator.  By extension, accessing overloaded operators is consequentlyb difficult.
 */
 template <class T>
 class Monitor {
