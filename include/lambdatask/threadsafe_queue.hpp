@@ -7,6 +7,7 @@ See LICENSE in the root of the Lambdatask repository for details.*/
 #include <condition_variable>
 #include <chrono>
 #include <queue>
+#include <atomic>
 
 namespace lambdatask {
 /**A threadsafe queue supporitng any number of readers and writers.
@@ -19,6 +20,7 @@ class ThreadsafeQueue {
 	void enqueue(T item) {
 		auto l = std::unique_lock<std::mutex>(lock);
 		internal_queue.push_front(item);
+		_contains++;
 		l.unlock();
 		enqueued_notify.notify_one();
 	}
@@ -52,15 +54,22 @@ Othererwise, call it with 3 parameters: `true`, a timeout in milliseconds, and a
 		return internal_queue.empty();
 	}
 
+/**Get the current number of items in the queue.*/
+	unsigned int contains() {
+		auto l = std::lock_guard<std::mutex>(lock);
+		return _contains;
+	}
 	private:
 	T actualDequeue() {
 		auto res = internal_queue.back();
 		internal_queue.pop_back();
+		_contains--;
 		return res;
 	}
 	std::mutex lock;
 	std::deque<T> internal_queue;
 	std::condition_variable enqueued_notify;
+	unsigned int _contains;
 };
 
 }
