@@ -1,7 +1,7 @@
 /**This file is part of Lambdatask, released under the terms of the Unlicense.
 See LICENSE in the root of the Lambdatask repository for details.*/
 
-#include <lambdatask/threadsafe_queue.hpp>
+#include <powercores/threadsafe_queue.hpp>
 #include <thread>
 #include <atomic>
 #include <stdio.h>

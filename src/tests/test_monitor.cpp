@@ -1,6 +1,6 @@
 /**This file is part of Lambdatask, released under the terms of the Unlicense.
 See LICENSE in the root of the Lambdatask repository for details.*/
-#include <lambdatask/monitor.hpp>
+#include <powercores/monitor.hpp>
 #include <atomic>
 #include <thread>
 #include <chrono>
