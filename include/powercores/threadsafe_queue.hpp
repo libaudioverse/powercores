@@ -1,7 +1,6 @@
 /**This file is part of Lambdatask, released under the terms of the Unlicense.
 See LICENSE in the root of the Lambdatask repository for details.*/
 #pragma once
-#include "monitor.hpp"
 #include <thread>
 #include <mutex>
 #include <condition_variable>

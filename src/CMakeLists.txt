@@ -1,2 +1,2 @@
-add_subdirectory(lambdatask)
+add_subdirectory(powercores)
 add_subdirectory(tests)
