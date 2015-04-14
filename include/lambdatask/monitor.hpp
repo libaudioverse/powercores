@@ -5,7 +5,7 @@ See LICENSE in the root of the Lambdatask repository for details.*/
 #include <memory>
 #include <utility>
 
-namespace lambdatask {
+namespace powercores {
 /**\brief A monitor, implementing the monitor pattern.
 
 Specifically, this has a `shared_ptr`-like interface: if `T` is a type, then `Monitor<t> foo;` is a monitor over a `T`.

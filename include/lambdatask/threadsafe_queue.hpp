@@ -9,7 +9,7 @@ See LICENSE in the root of the Lambdatask repository for details.*/
 #include <queue>
 #include <atomic>
 
-namespace lambdatask {
+namespace powercores {
 /**A threadsafe queue supporitng any number of readers and writers.
 
 Note: T must be default constructible, copy assignable and copy constructible.*/

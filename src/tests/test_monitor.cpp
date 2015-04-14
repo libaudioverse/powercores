@@ -24,7 +24,7 @@ class Counter {
 	unsigned int val = 0;
 };
 
-lambdatask::Monitor<Counter> mon;
+powercores::Monitor<Counter> mon;
 std::atomic<unsigned int> atom;
 
 void test_fast_thread() {

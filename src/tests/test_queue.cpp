@@ -8,7 +8,7 @@ See LICENSE in the root of the Lambdatask repository for details.*/
 
 bool basic_test() {
 	printf("Testing queue for single-thread access...\n");
-	lambdatask::ThreadsafeQueue<unsigned int> q;
+	powercores::ThreadsafeQueue<unsigned int> q;
 	unsigned int length = 100;
 	for(unsigned int i = 0; i < length; i++) {
 		q.enqueue(i);
@@ -25,7 +25,7 @@ bool basic_test() {
 
 bool timeout_test() {
 	printf("Testing queue timeout support...\n");
-	lambdatask::ThreadsafeQueue<int> q;
+	powercores::ThreadsafeQueue<int> q;
 	int result = q.dequeue(false, 5, 5);
 	if(result == 5) {
 		printf("Timeout test passed.\n");
@@ -37,7 +37,7 @@ bool timeout_test() {
 
 bool multithreaded_test() {
 	printf("Testing queue for thread safety\n");
-	lambdatask::ThreadsafeQueue<int> q1, q2;
+	powercores::ThreadsafeQueue<int> q1, q2;
 	std::vector<std::thread> thread_array;
 	unsigned int total = 50000;
 	unsigned int threads = 10;
