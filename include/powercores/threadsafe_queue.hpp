@@ -9,7 +9,7 @@ See LICENSE in the root of the Lambdatask repository for details.*/
 #include <atomic>
 
 namespace powercores {
-/**A threadsafe queue supporitng any number of readers and writers.
+/**A threadsafe queue supporting any number of readers and writers.
 
 Note: T must be default constructible, copy assignable and copy constructible.*/
 template <typename T>
@@ -25,27 +25,15 @@ class ThreadsafeQueue {
 	}
 
 	/**Dequeue an item.
-When called with no parameters, this function will sleep forever.
-
-Othererwise, call it with 3 parameters: `true`, a timeout in milliseconds, and a default item to return if the queue is empty.*/
-	T dequeue(bool sleepForever = true, unsigned int timeoutInMs = 0, T returnIfEmptyAfterTimeout = T()) {
+If there is no item in the queue, this function sleeps forever.*/
+	T dequeue() {
 		auto l = std::unique_lock<std::mutex>(lock);
 		if(internal_queue.empty() == false) {
 			return actualDequeue();
 		}
 
-		if(sleepForever == false) {
-			if(enqueued_notify.wait_for(l, std::chrono::milliseconds(timeoutInMs), [this]()->bool {return internal_queue.empty() == false;}) == true) {
-				return actualDequeue();
-			}
-			else {
-				return returnIfEmptyAfterTimeout;
-			}
-		}
-		else {
-			enqueued_notify.wait(l, [this]() {return internal_queue.empty() == false;});
-			return actualDequeue();
-		}
+		enqueued_notify.wait(l, [this]() {return internal_queue.empty() == false;});
+		return actualDequeue();
 	}
 
 	bool empty() {

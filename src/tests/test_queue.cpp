@@ -23,18 +23,6 @@ bool basic_test() {
 	return true;
 }
 
-bool timeout_test() {
-	printf("Testing queue timeout support...\n");
-	powercores::ThreadsafeQueue<int> q;
-	int result = q.dequeue(false, 5, 5);
-	if(result == 5) {
-		printf("Timeout test passed.\n");
-		return true;
-	}
-	printf("Timeout test failed.\n");
-	return false;
-}
-
 bool multithreaded_test() {
 	printf("Testing queue for thread safety\n");
 	powercores::ThreadsafeQueue<int> q1, q2;
@@ -73,6 +61,5 @@ bool multithreaded_test() {
 #define TEST(t) if(t() == false) return;
 void main() {
 	TEST(basic_test);
-	TEST(timeout_test);
 	TEST(multithreaded_test);
 }
