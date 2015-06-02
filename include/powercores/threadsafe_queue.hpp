@@ -7,6 +7,7 @@ See LICENSE in the root of the Lambdatask repository for details.*/
 #include <chrono>
 #include <queue>
 #include <atomic>
+#include "exceptions.hpp"
 
 namespace powercores {
 /**A threadsafe queue supporting any number of readers and writers.
@@ -34,6 +35,18 @@ If there is no item in the queue, this function sleeps forever.*/
 
 		enqueued_notify.wait(l, [this]() {return internal_queue.empty() == false;});
 		return actualDequeue();
+	}
+
+	/**Like dequeue, but will throw TimeoutException if there is nothing to dequeue before the timeout.*/
+	T dequeueWithTimeout(int timeoutInMS) {
+		auto l = std::unique_lock<std::mutex>(lock);
+		if(internal_queue.empty() == false) {
+			return actualDequeue();
+		}
+
+		bool res = enqueued_notify.wait_for(l, std::chrono::milliseconds(timeoutInMS), [this]() {return internal_queue.empty() == false;});
+		if(res) return actualDequeue();
+		else throw TimeoutException();
 	}
 
 	bool empty() {
