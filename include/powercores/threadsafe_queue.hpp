@@ -69,7 +69,7 @@ If there is no item in the queue, this function sleeps forever.*/
 	std::mutex lock;
 	std::deque<T> internal_queue;
 	std::condition_variable enqueued_notify;
-	unsigned int _size;
+	unsigned int _size = 0;
 };
 
 }
