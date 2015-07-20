@@ -1,5 +1,5 @@
-/**This file is part of Lambdatask, released under the terms of the Unlicense.
-See LICENSE in the root of the Lambdatask repository for details.*/
+/**This file is part of powercores, released under the terms of the Unlicense.
+See LICENSE in the root of the powercores repository for details.*/
 
 #include <powercores/threadsafe_queue.hpp>
 #include <thread>
