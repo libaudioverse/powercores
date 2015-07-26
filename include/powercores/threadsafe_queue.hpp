@@ -43,7 +43,6 @@ If there is no item in the queue, this function sleeps forever.*/
 		if(internal_queue.empty() == false) {
 			return actualDequeue();
 		}
-
 		bool res = enqueued_notify.wait_for(l, std::chrono::milliseconds(timeoutInMS), [this]() {return internal_queue.empty() == false;});
 		if(res) return actualDequeue();
 		else throw TimeoutException();

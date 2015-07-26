@@ -26,9 +26,9 @@ class ThreadPool {
 	}
 	
 	void start() {
-		auto worker = [&](){workerThreadFunction();};
 		running.store(1);
-		for(int i = 0; i < thread_count; i++) threads.emplace_back(worker);
+		job_queues.resize(thread_count);
+		for(int i = 0; i < thread_count; i++) threads.emplace_back([&, i] () {workerThreadFunction(i);});
 	}
 	
 	void stop() {
@@ -46,7 +46,9 @@ class ThreadPool {
 	
 	/**Submit a job, which will be called in the future.*/
 	void submitJob(std::function<void(void)> job) {
-		job_queue.enqueue(job);
+		auto &job_queue = job_queues[job_queue_pointer];
+		job_queue->enqueue(job);
+		job_queue_pointer = (job_queue_pointer+1)%thread_count;
 	}
 	
 	/**Submit a job represented by a function with arguments and a return value, obtaining a future which will later contain the result of the job.*/
@@ -90,7 +92,10 @@ class ThreadPool {
 	
 	private:
 	
-	void workerThreadFunction() {
+	void workerThreadFunction(int id) {
+		ThreadsafeQueue<std::function<void(void)>> job_queue;
+		//Register it.
+		job_queues[id] = &job_queue;
 		std::function<void(void)> job;
 		while(running	.load()) {
 			try {
@@ -104,9 +109,10 @@ class ThreadPool {
 		}
 	}
 	
-	int thread_count = 0;
+	//job_queue_pointer is the queue we're writing into.
+	int thread_count = 0, job_queue_pointer = 0;
 	std::vector<std::thread> threads;
-	ThreadsafeQueue<std::function<void(void)>> job_queue;
+	std::vector<ThreadsafeQueue<std::function<void(void)>>*> job_queues;
 	std::atomic<int> running;
 };
 
