@@ -49,7 +49,7 @@ class ThreadPool {
 	}
 	
 	/**Submit a job, which will be called in the future.*/
-	void submitJob(std::function<void(void)> job) {
+	void submitJob(const std::function<void(void)> &job) {
 		auto &job_queue = job_queues[job_queue_pointer];
 		job_queue->enqueue(job);
 		job_queue_pointer = (job_queue_pointer+1)%thread_count;
@@ -57,7 +57,7 @@ class ThreadPool {
 
 	/**Submit a job represented by a function with arguments and a return value, obtaining a future which will later contain the result of the job.*/
 	template<class FuncT, class... ArgsT>
-	std::future<typename std::result_of<FuncT(ArgsT...)>::type> submitJobWithResult(FuncT callable, ArgsT... args) {
+	std::future<typename std::result_of<FuncT(ArgsT...)>::type> submitJobWithResult(const FuncT &callable, ArgsT... args) {
 		//The task is not copyable, so we keep a pointer and delete it after we execute it.
 		auto task = new std::packaged_task<typename std::result_of<FuncT(ArgsT...)>::type(ArgsT...)>(callable);
 		auto job = [task, args...] () {
@@ -107,7 +107,7 @@ class ThreadPool {
 				job();
 			}
 		}
-		catch(ThreadPoolPoisonException e) {
+		catch(ThreadPoolPoisonException) {
 			//Nothing, just a way to break out.
 		}
 	}
