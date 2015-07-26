@@ -14,8 +14,11 @@ See LICENSE in the root of the powercores repository for details.*/
 
 namespace powercores {
 
-/**A pool of threads.  Accepts tasks in a fairly obvious manner.*/
+/**Throwing this on a ThreadPool thread causes the thread to die.*/
+class ThreadPoolPoisonException {
+};
 
+/**A pool of threads.  Accepts tasks in a fairly obvious manner.*/
 class ThreadPool {
 	public:
 	
@@ -32,6 +35,7 @@ class ThreadPool {
 	}
 	
 	void stop() {
+		for(int i = 0; i < thread_count; i++) submitJob([] () {throw ThreadPoolPoisonException();});
 		running.store(0);
 		for(auto &i: threads) i.join();
 		threads.clear();
@@ -50,7 +54,7 @@ class ThreadPool {
 		job_queue->enqueue(job);
 		job_queue_pointer = (job_queue_pointer+1)%thread_count;
 	}
-	
+
 	/**Submit a job represented by a function with arguments and a return value, obtaining a future which will later contain the result of the job.*/
 	template<class FuncT, class... ArgsT>
 	std::future<typename std::result_of<FuncT(ArgsT...)>::type> submitJobWithResult(FuncT callable, ArgsT... args) {
@@ -97,15 +101,14 @@ class ThreadPool {
 		//Register it.
 		job_queues[id] = &job_queue;
 		std::function<void(void)> job;
-		while(running	.load()) {
-			try {
-				job = job_queue.dequeueWithTimeout(10);
+		try {
+			while(true) {
+				job = job_queue.dequeue();
+				job();
 			}
-			catch(TimeoutException e) {
-				//Nothing. We allow timeouts so that we keep evaluating the loop condition.
-				continue;
-			}
-			job();
+		}
+		catch(ThreadPoolPoisonException e) {
+			//Nothing, just a way to break out.
 		}
 	}
 	
