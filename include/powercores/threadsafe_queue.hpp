@@ -21,7 +21,6 @@ class ThreadsafeQueue {
 		auto l = std::unique_lock<std::mutex>(lock);
 		internal_queue.push_front(item);
 		_size++;
-		l.unlock();
 		enqueued_notify.notify_one();
 	}
 

@@ -22,7 +22,9 @@ class ThreadPoolPoisonException {
 class ThreadPool {
 	public:
 	
-	ThreadPool(int threadCount): thread_count(threadCount) {}
+	ThreadPool(int threadCount): thread_count(threadCount) {
+		running.store(0);
+	}
 	
 	~ThreadPool() {
 		if(running.load()) stop();
@@ -31,18 +33,24 @@ class ThreadPool {
 	void start() {
 		running.store(1);
 		job_queues.resize(thread_count);
+		for(auto &i: job_queues) i = new ThreadsafeQueue<std::function<void(void)>>();
 		for(int i = 0; i < thread_count; i++) threads.emplace_back([&, i] () {workerThreadFunction(i);});
 	}
 	
 	void stop() {
-		for(int i = 0; i < thread_count; i++) submitJob([] () {throw ThreadPoolPoisonException();});
+		for(auto &i: job_queues) i->enqueue([] () {throw ThreadPoolPoisonException();});
 		running.store(0);
-		for(auto &i: threads) i.join();
+		for(int i = 0; i < threads.size(); i++) {
+			threads[i].join();
+		}
 		threads.clear();
+		for(auto &i: job_queues) delete i;
+		job_queues.clear();
+		job_queue_pointer = 0;
 	}
 
 	void setThreadCount(int n) {
-		bool wasRunning = running.load();
+		bool wasRunning = running.load() == 1;
 		if(wasRunning)  stop();
 		thread_count = n;
 		if(wasRunning) start();
@@ -97,9 +105,7 @@ class ThreadPool {
 	private:
 	
 	void workerThreadFunction(int id) {
-		ThreadsafeQueue<std::function<void(void)>> job_queue;
-		//Register it.
-		job_queues[id] = &job_queue;
+		ThreadsafeQueue<std::function<void(void)>> &job_queue = *job_queues[id];
 		std::function<void(void)> job;
 		try {
 			while(true) {
