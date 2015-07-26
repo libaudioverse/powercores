@@ -55,6 +55,31 @@ class ThreadPool {
 		submitJob(job);
 		return retval;
 	}
+
+	/**Submit a barrier.	
+	A barrier ensures that all jobs enqueued before the barrier will finish execution before any job after the barrier begins execution.*/
+	void submitBarrier() {
+		//Promises are not copyable, so we save a pointer and delete it later, after the barrier.
+		auto promise = new std::promise<void>();
+		std::shared_future<void> future(promise->get_future());
+		auto counter = new std::atomic<int>();
+		counter->store(0);
+		int goal = thread_count;
+		auto barrierJob = [counter, promise, future, goal] () {
+			int currentCounter = counter->fetch_add(1); //increment by one and get the current counter.
+			if(currentCounter == goal-1) { //we're finished.
+				promise->set_value();
+				delete promise; //we're done, this isn't needed anymore.
+				//We got here, so we're the last one to manipulate the counter.
+				delete counter;
+			}
+			else {
+				//Otherwise, we wait for all the other barriers.
+				future.wait();
+			}
+		};
+		for(int i = 0; i < thread_count; i++) submitJob(barrierJob);
+	}
 	
 	private:
 	
