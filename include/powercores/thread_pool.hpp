@@ -36,6 +36,13 @@ class ThreadPool {
 		for(auto &i: threads) i.join();
 		threads.clear();
 	}
+
+	void setThreadCount(int n) {
+		bool wasRunning = running.load();
+		if(wasRunning)  stop();
+		thread_count = n;
+		if(wasRunning) start();
+	}
 	
 	/**Submit a job, which will be called in the future.*/
 	void submitJob(std::function<void(void)> job) {
