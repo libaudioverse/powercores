@@ -10,7 +10,7 @@ See LICENSE in the root of the powercores repository for details.*/
 bool basic_test() {
 	printf("Performing basic thread pool test.\n");
 	int threads = 10;
-	int jobs = 50000;
+	int jobs = 500000;
 	powercores::ThreadPool tp{threads};
 	tp.start();
 	std::atomic<int> accum;
