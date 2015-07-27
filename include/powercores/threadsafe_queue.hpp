@@ -47,6 +47,13 @@ If there is no item in the queue, this function sleeps forever.*/
 		else throw TimeoutException();
 	}
 
+	/**Enqueue a range represented by the iterator begin and end.*/
+	template<class IterT>
+	void enqueueRange(IterT begin, IterT end) {
+		auto l = std::unique_lock<std::mutex>(lock);
+		for(; begin != end; begin++) internal_queue.push_front(*iter);
+	}
+	
 	/**DequeueRange dequeues at least one item and at most the specified count, storing them in the iterator.
 	The number of items dequeued is returned.*/
 	template<class IterT>
