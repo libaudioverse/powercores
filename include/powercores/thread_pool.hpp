@@ -76,7 +76,32 @@ class ThreadPool {
 		submitJob(job);
 		return retval;
 	}
+	
+	/**Submit a range of jobs.*/
+	template<class IterT>
+	void submitJobRange(IterT begin, IterT end) {
+		for(; begin != end; begin++) submitJob(*begin);
+	}
 
+	/**Submit a range of jobs.
+	The jobs will run in some unspecified order.  This is faster than submitJobRange.
+	
+	The iterators must be random access iterators.*/
+	template<class IterT>
+	void submitJobRangeUnordered(IterT begin, IterT end) {
+		int size = end-begin;
+		if(size == 0) return;
+		int perThread = size/thread_count;
+		//We're giving some to all threads, we don't need to update the job_queue_pointer.
+		//If we did, it'd just be what it was when we started.
+		for(int i = 0; i < thread_count; i++) {
+			job_queues[job_queue_pointer+i].enqueueRange(begin, begin+perThread);
+			begin+=perThread;
+		}
+		//Submit the rest normally.
+		submitJobRange(begin, end);
+	}
+	
 	/**Submit a barrier.	
 	A barrier ensures that all jobs enqueued before the barrier will finish execution before any job after the barrier begins execution.*/
 	void submitBarrier() {
