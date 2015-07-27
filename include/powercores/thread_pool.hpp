@@ -106,11 +106,12 @@ class ThreadPool {
 	
 	void workerThreadFunction(int id) {
 		ThreadsafeQueue<std::function<void(void)>> &job_queue = *job_queues[id];
-		std::function<void(void)> job;
+		int jobsSize = 5;
+		std::function<void(void)> jobs[5];
 		try {
 			while(true) {
-				job = job_queue.dequeue();
-				job();
+				int got = job_queue.dequeueRange(jobsSize, jobs);
+				for(int i = 0; i < got; i++) jobs[i]();
 			}
 		}
 		catch(ThreadPoolPoisonException) {

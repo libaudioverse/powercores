@@ -47,6 +47,21 @@ If there is no item in the queue, this function sleeps forever.*/
 		else throw TimeoutException();
 	}
 
+	/**DequeueRange dequeues at least one item and at most the specified count, storing them in the iterator.
+	The number of items dequeued is returned.*/
+	template<class IterT>
+	int dequeueRange(int count, IterT output) {
+		auto l = std::unique_lock<std::mutex>(lock);
+		int ret = 0;
+		if(internal_queue.empty()) enqueued_notify.wait(l, [this] () {return internal_queue.empty() == false;});
+		while(ret < count && internal_queue.empty() == false) {
+			*output = actualDequeue();
+			ret++;
+			output++;
+		}
+		return ret;
+	}
+	
 	bool empty() {
 		auto l = std::lock_guard<std::mutex>(lock);
 		return internal_queue.empty();
@@ -57,6 +72,7 @@ If there is no item in the queue, this function sleeps forever.*/
 		auto l = std::lock_guard<std::mutex>(lock);
 		return _size;
 	}
+	
 	private:
 	T actualDequeue() {
 		auto res = internal_queue.back();
@@ -64,6 +80,7 @@ If there is no item in the queue, this function sleeps forever.*/
 		_size--;
 		return res;
 	}
+	
 	std::mutex lock;
 	std::deque<T> internal_queue;
 	std::condition_variable enqueued_notify;
