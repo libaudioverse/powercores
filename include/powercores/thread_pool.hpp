@@ -9,6 +9,7 @@ See LICENSE in the root of the powercores repository for details.*/
 #include <atomic>
 #include <future>
 #include <type_traits>
+#include <system_error>
 #include "exceptions.hpp"
 #include "threadsafe_queue.hpp"
 
@@ -34,7 +35,23 @@ class ThreadPool {
 		running.store(1);
 		job_queues.resize(thread_count);
 		for(auto &i: job_queues) i = new ThreadsafeQueue<std::function<void(void)>>();
-		for(int i = 0; i < thread_count; i++) threads.emplace_back([&, i] () {workerThreadFunction(i);});
+		for(int i = 0; i < thread_count; i++) {
+			bool retry = false;
+			do {
+				try {
+					threads.emplace_back([&, i] () {workerThreadFunction(i);});
+					retry = false;
+				}
+				catch(std::system_error e) {
+					if(e.code() == std::errc::resource_unavailable_try_again) {
+						retry = true;
+					}
+					else {
+						throw;
+					}
+				}	
+			} while(retry);
+		}
 	}
 	
 	void stop() {
@@ -95,7 +112,7 @@ class ThreadPool {
 		//We're giving some to all threads, we don't need to update the job_queue_pointer.
 		//If we did, it'd just be what it was when we started.
 		for(int i = 0; i < thread_count; i++) {
-			job_queues[job_queue_pointer+i].enqueueRange(begin, begin+perThread);
+			job_queues[(job_queue_pointer+i)%thread_count]->enqueueRange(begin, begin+perThread);
 			begin+=perThread;
 		}
 		//Submit the rest normally.

@@ -51,7 +51,7 @@ If there is no item in the queue, this function sleeps forever.*/
 	template<class IterT>
 	void enqueueRange(IterT begin, IterT end) {
 		auto l = std::unique_lock<std::mutex>(lock);
-		for(; begin != end; begin++) internal_queue.push_front(*iter);
+		for(; begin != end; begin++) internal_queue.push_front(*begin);
 	}
 	
 	/**DequeueRange dequeues at least one item and at most the specified count, storing them in the iterator.
