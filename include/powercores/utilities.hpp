@@ -11,12 +11,13 @@ namespace powercores {
 This function wraps the std::thread constructor and automatically retries.
 If any other error besides EAGAIN (std::errc::resource_unavailable_try_again) occurs, the exception is rethrown.*/
 template<typename... ParamsT>
-std::thread  &&safeStartThread(ParamsT&&... params) {
+std::thread  safeStartThread(ParamsT&&... params) {
 	bool retry = false;
 	std::thread retval;
 	do {
 		try {
 			retval = std::thread(params...);
+			retry = false;
 		}
 		catch(std::system_error &e) {
 			//This next line is (hopefully) a workaround for a ctritical bug in VC++2013.
@@ -25,7 +26,7 @@ std::thread  &&safeStartThread(ParamsT&&... params) {
 			else throw;
 		}
 	} while(retry);
-	return std::move(retval);
+	return retval;
 }
 
 }
