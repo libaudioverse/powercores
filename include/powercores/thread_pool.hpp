@@ -12,6 +12,7 @@ See LICENSE in the root of the powercores repository for details.*/
 #include <system_error>
 #include "exceptions.hpp"
 #include "threadsafe_queue.hpp"
+#include "utilities.hpp"
 
 namespace powercores {
 
@@ -36,21 +37,7 @@ class ThreadPool {
 		job_queues.resize(thread_count);
 		for(auto &i: job_queues) i = new ThreadsafeQueue<std::function<void(void)>>();
 		for(int i = 0; i < thread_count; i++) {
-			bool retry = false;
-			do {
-				try {
-					threads.emplace_back([&, i] () {workerThreadFunction(i);});
-					retry = false;
-				}
-				catch(std::system_error e) {
-					if(e.code() == std::errc::resource_unavailable_try_again) {
-						retry = true;
-					}
-					else {
-						throw;
-					}
-				}	
-			} while(retry);
+			threads.emplace_back(safeStartThread(&ThreadPool::workerThreadFunction, this, i));
 		}
 	}
 	
