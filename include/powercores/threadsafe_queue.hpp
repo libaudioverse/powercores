@@ -18,7 +18,7 @@ class ThreadsafeQueue {
 	public:
 	/**Enqueue an item.*/
 	void enqueue(T item) {
-		auto l = std::unique_lock<std::mutex>(lock);
+		std::unique_lock<std::mutex> l(lock);
 		internal_queue.push_front(item);
 		_size++;
 		enqueued_notify.notify_one();
@@ -27,7 +27,7 @@ class ThreadsafeQueue {
 	/**Dequeue an item.
 If there is no item in the queue, this function sleeps forever.*/
 	T dequeue() {
-		auto l = std::unique_lock<std::mutex>(lock);
+		std::unique_lock<std::mutex> l(lock);
 		if(internal_queue.empty() == false) {
 			return actualDequeue();
 		}
@@ -38,7 +38,7 @@ If there is no item in the queue, this function sleeps forever.*/
 
 	/**Like dequeue, but will throw TimeoutException if there is nothing to dequeue before the timeout.*/
 	T dequeueWithTimeout(int timeoutInMS) {
-		auto l = std::unique_lock<std::mutex>(lock);
+		std::unique_lock<std::mutex> l(lock);
 		if(internal_queue.empty() == false) {
 			return actualDequeue();
 		}
@@ -50,7 +50,7 @@ If there is no item in the queue, this function sleeps forever.*/
 	/**Enqueue a range represented by the iterator begin and end.*/
 	template<class IterT>
 	void enqueueRange(IterT begin, IterT end) {
-		auto l = std::unique_lock<std::mutex>(lock);
+		std::unique_lock<std::mutex> l(lock);
 		for(; begin != end; begin++) internal_queue.push_front(*begin);
 	}
 	
@@ -58,7 +58,7 @@ If there is no item in the queue, this function sleeps forever.*/
 	The number of items dequeued is returned.*/
 	template<class IterT>
 	int dequeueRange(int count, IterT output) {
-		auto l = std::unique_lock<std::mutex>(lock);
+		std::unique_lock<std::mutex> l(lock);
 		int ret = 0;
 		if(internal_queue.empty()) enqueued_notify.wait(l, [this] () {return internal_queue.empty() == false;});
 		while(ret < count && internal_queue.empty() == false) {
@@ -70,13 +70,13 @@ If there is no item in the queue, this function sleeps forever.*/
 	}
 	
 	bool empty() {
-		auto l = std::lock_guard<std::mutex>(lock);
+		std::lock_guard<std::mutex> l(lock);
 		return internal_queue.empty();
 	}
 
 /**Get the current number of items in the queue.*/
 	unsigned int size() {
-		auto l = std::lock_guard<std::mutex>(lock);
+		std::lock_guard<std::mutex> l(lock);
 		return _size;
 	}
 	
