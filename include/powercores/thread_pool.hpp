@@ -23,49 +23,14 @@ class ThreadPoolPoisonException {
 /**A pool of threads.  Accepts tasks in a fairly obvious manner.*/
 class ThreadPool {
 	public:
-	
-	ThreadPool(int threadCount): thread_count(threadCount) {
-		running.store(0);
-	}
-	
-	~ThreadPool() {
-		if(running.load()) stop();
-	}
-	
-	void start() {
-		running.store(1);
-		job_queues.resize(thread_count);
-		for(auto &i: job_queues) i = new ThreadsafeQueue<std::function<void(void)>>();
-		for(int i = 0; i < thread_count; i++) {
-			threads.emplace_back(safeStartThread(&ThreadPool::workerThreadFunction, this, i));
-		}
-	}
-	
-	void stop() {
-		for(auto &i: job_queues) i->enqueue([] () {throw ThreadPoolPoisonException();});
-		running.store(0);
-		for(int i = 0; i < threads.size(); i++) {
-			threads[i].join();
-		}
-		threads.clear();
-		for(auto &i: job_queues) delete i;
-		job_queues.clear();
-		job_queue_pointer = 0;
-	}
-
-	void setThreadCount(int n) {
-		bool wasRunning = running.load() == 1;
-		if(wasRunning)  stop();
-		thread_count = n;
-		if(wasRunning) start();
-	}
+	ThreadPool(int count);
+	~ThreadPool();
+	void start();
+	void stop() ;
+	void setThreadCount(int n) ;
 	
 	/**Submit a job, which will be called in the future.*/
-	void submitJob(const std::function<void(void)> &job) {
-		auto &job_queue = job_queues[job_queue_pointer];
-		job_queue->enqueue(job);
-		job_queue_pointer = (job_queue_pointer+1)%thread_count;
-	}
+	void submitJob(const std::function<void(void)> &job);
 
 	/**Submit a job represented by a function with arguments and a return value, obtaining a future which will later contain the result of the job.*/
 	template<class FuncT, class... ArgsT>
@@ -108,45 +73,11 @@ class ThreadPool {
 	
 	/**Submit a barrier.	
 	A barrier ensures that all jobs enqueued before the barrier will finish execution before any job after the barrier begins execution.*/
-	void submitBarrier() {
-		//Promises are not copyable, so we save a pointer and delete it later, after the barrier.
-		auto promise = new std::promise<void>();
-		std::shared_future<void> future(promise->get_future());
-		auto counter = new std::atomic<int>();
-		counter->store(0);
-		int goal = thread_count;
-		auto barrierJob = [counter, promise, future, goal] () {
-			int currentCounter = counter->fetch_add(1); //increment by one and get the current counter.
-			if(currentCounter == goal-1) { //we're finished.
-				promise->set_value();
-				delete promise; //we're done, this isn't needed anymore.
-				//We got here, so we're the last one to manipulate the counter.
-				delete counter;
-			}
-			else {
-				//Otherwise, we wait for all the other barriers.
-				future.wait();
-			}
-		};
-		for(int i = 0; i < thread_count; i++) submitJob(barrierJob);
-	}
+	void submitBarrier() ;
 	
 	private:
 	
-	void workerThreadFunction(int id) {
-		ThreadsafeQueue<std::function<void(void)>> &job_queue = *job_queues[id];
-		int jobsSize = 5;
-		std::function<void(void)> jobs[5];
-		try {
-			while(true) {
-				int got = job_queue.dequeueRange(jobsSize, jobs);
-				for(int i = 0; i < got; i++) jobs[i]();
-			}
-		}
-		catch(ThreadPoolPoisonException) {
-			//Nothing, just a way to break out.
-		}
-	}
+	void workerThreadFunction(int id);
 	
 	//job_queue_pointer is the queue we're writing into.
 	int thread_count = 0, job_queue_pointer = 0;
