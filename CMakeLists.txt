@@ -1,7 +1,7 @@
 cmake_MINIMUM_REQUIRED(VERSION 2.8)
 
-project(Lambdatask)
+project(powercores)
 
-include_directories("${CMAKE_SOURCE_DIR}/include")
+include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include")
 
 add_subdirectory(src)
