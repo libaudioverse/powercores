@@ -43,7 +43,7 @@ class ThreadPool {
 	std::future<typename std::result_of<FuncT(ArgsT...)>::type> submitJobWithResult(FuncT &&callable, ArgsT&&... args) {
 		//The task is not copyable, so we keep a pointer and delete it after we execute it.
 		auto task = new std::packaged_task<typename std::result_of<FuncT(ArgsT...)>::type(ArgsT...)>(callable);
-		auto job = [task, args...] () {
+		auto job = [task, args...] () mutable {
 			(*task)(args...);
 			delete task;
 		};
@@ -81,13 +81,12 @@ class ThreadPool {
 	The function receives the result of dereferencing the iterator and any additional arguments, and will run in some unspecified order.  The iterators must be random access.*/
 	template<typename CallableT, typename IterT, typename... ArgsT>
 	void map(CallableT &&callable, IterT begin, IterT end, ArgsT&&... args) {
-		//Sometimes, this can collapse to a function pointer.  Thus us writing it before the loop.
-		auto executor = [callable, args...](IterT subrangeBegin, iterT subrangeEnd) {
+		auto executor = [callable, args...](IterT subrangeBegin, IterT subrangeEnd) {
 			for(; subrangeBegin != subrangeEnd; subrangeBegin++) callable(*subrangeBegin, args...);
 		};
 		int amount = end-begin;
 		int amountPerThread = amount/thread_count;
-		for(int i = 0; i < amountPerThread; i++) {
+		for(int i = 0; i < thread_count; i++) {
 			submitJobWithResult(executor, begin, begin+amountPerThread);
 			begin += amountPerThread;
 		}
