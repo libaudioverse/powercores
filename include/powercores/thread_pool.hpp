@@ -34,7 +34,7 @@ class ThreadPool {
 
 	/**Submit a job represented by a function with arguments and a return value, obtaining a future which will later contain the result of the job.*/
 	template<class FuncT, class... ArgsT>
-	std::future<typename std::result_of<FuncT(ArgsT...)>::type> submitJobWithResult(const FuncT &callable, ArgsT... args) {
+	std::future<typename std::result_of<FuncT(ArgsT...)>::type> submitJobWithResult(const FuncT &&callable, ArgsT&&... args) {
 		//The task is not copyable, so we keep a pointer and delete it after we execute it.
 		auto task = new std::packaged_task<typename std::result_of<FuncT(ArgsT...)>::type(ArgsT...)>(callable);
 		auto job = [task, args...] () {
@@ -46,7 +46,7 @@ class ThreadPool {
 		return retval;
 	}
 	
-	/**Submit a range of jobs.*/
+	/**Submit a range of jobs which will be started in order as threads become available from begin to end.*/
 	template<class IterT>
 	void submitJobRange(IterT begin, IterT end) {
 		for(; begin != end; begin++) submitJob(*begin);
