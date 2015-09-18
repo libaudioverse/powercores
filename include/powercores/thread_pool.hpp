@@ -71,6 +71,23 @@ class ThreadPool {
 		submitJobRange(begin, end);
 	}
 	
+	/**Map a function over a range specified by two iterators.
+	The function receives the result of dereferencing the iterator and any additional arguments, and will run in some unspecified order.  The iterators must be random access.*/
+	template<typename CallableT, typename IterT, typename... ArgsT>
+	void map(CallableT &&callable, IterT begin, IterT end, ArgsT&&... args) {
+		//Sometimes, this can collapse to a function pointer.  Thus us writing it before the loop.
+		auto executor = [args...](IterT subrangeBegin, iterT subrangeEnd) {
+			for(; subrangeBegin != subrangeEnd; subrangeBegin++) callable(*subrangeBegin, args...);
+		};
+		int amount = end-begin;
+		int amountPerThread = amount/thread_count;
+		for(int i = 0; i < amountPerThread; i++) {
+			submitJobWithResult(executor, begin, begin+amountPerThread);
+			begin += amountPerThread;
+		}
+		if(begin != end) submitJobWithResult(executor, begin, end);
+	}
+	
 	/**Submit a barrier.	
 	A barrier ensures that all jobs enqueued before the barrier will finish execution before any job after the barrier begins execution.*/
 	void submitBarrier() ;
