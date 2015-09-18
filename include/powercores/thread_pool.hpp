@@ -82,7 +82,7 @@ class ThreadPool {
 	template<typename CallableT, typename IterT, typename... ArgsT>
 	void map(CallableT &&callable, IterT begin, IterT end, ArgsT&&... args) {
 		//Sometimes, this can collapse to a function pointer.  Thus us writing it before the loop.
-		auto executor = [args...](IterT subrangeBegin, iterT subrangeEnd) {
+		auto executor = [callable, args...](IterT subrangeBegin, iterT subrangeEnd) {
 			for(; subrangeBegin != subrangeEnd; subrangeBegin++) callable(*subrangeBegin, args...);
 		};
 		int amount = end-begin;
