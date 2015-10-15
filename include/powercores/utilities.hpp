@@ -29,4 +29,10 @@ std::thread  safeStartThread(ParamsT&&... params) {
 	return retval;
 }
 
+/**Get a unique identifier for a thread.
+This is guaranteed to be unique for up to the size limit of long long threads, and does not reuse identifiers.
+std::thread::id does reuse identifiers, which causes problems for some applications.*/
+long long getThreadId();
+
+
 }
