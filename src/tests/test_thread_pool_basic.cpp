@@ -13,8 +13,7 @@ int main() {
 	int jobs = 500000;
 	powercores::ThreadPool tp{threads};
 	tp.start();
-	std::atomic<int> accum;
-	accum.store(0);
+	std::atomic<int> accum{0};
 	for(int i = 0; i < jobs; i++) {
 		tp.submitJob([&] () {
 			accum.fetch_add(1);

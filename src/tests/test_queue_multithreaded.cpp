@@ -13,7 +13,7 @@ int main() {
 	unsigned int total = 50000;
 	unsigned int threads = 10;
 	unsigned int expectedResult = total*threads;
-	std::atomic<int> accumulator;
+	std::atomic<int> accumulator{0};
 	auto stage1 = [&]() {
 		for(unsigned int i = 0; i < total; i++) q2.enqueue(q1.dequeue());
 	};

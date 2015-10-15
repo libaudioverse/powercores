@@ -12,8 +12,7 @@ int main() {
 	int threads = 10;
 	int iterations = 1000;
 	int jobsPerIteration = 50;
-	std::atomic<int> accum;
-	accum.store(0);
+	std::atomic<int> accum{0};
 	powercores::ThreadPool tp{threads};
 	tp.start();
 	for(int iteration = 0; iteration < iterations; iteration++) {
