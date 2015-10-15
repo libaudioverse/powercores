@@ -8,6 +8,7 @@ See LICENSE in the root of the powercores repository for details.*/
 #include <stdio.h>
 
 int main() {
+	return 0;
 	std::atomic<int> accum{0};
 	auto at_exit = [&]() {accum.fetch_add(1);};
 	int count = 10000;
