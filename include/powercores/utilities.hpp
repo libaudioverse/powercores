@@ -42,7 +42,7 @@ void atThreadExitImpl(std::function<void(void)> what);
 This has all of the restrictions of a destructor.  Arguments and the callable object are copied.  Order of calls is not guaranteed.*/
 template<typename CallableT, typename... ArgsT>
 void atThreadExit(CallableT&& callable, ArgsT&&... args) {
-	atThreadExitImpl([callable, args...]() {callable(args);});
+	atThreadExitImpl([callable, args...]() {callable(args...);});
 }
 
 }

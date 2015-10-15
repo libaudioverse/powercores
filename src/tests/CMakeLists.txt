@@ -5,6 +5,7 @@ target_link_libraries(${name} powercores)
 add_test(NAME ${name}, COMMAND ${name})
 endmacro()
 
+test(test_at_thread_exit)
 test(test_get_thread_id)
 test(test_queue_multithreaded)
 test(test_queue_singlethreaded)
