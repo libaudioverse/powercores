@@ -41,7 +41,8 @@ class ThreadPool {
 	/**Submit a job, possibly with arguments, to all threads.*/
 	template<typename CallableT, typename... ArgsT>
 	void submitJobToAllThreads(CallableT &&callable, ArgsT&&... args) {
-		auto job = [callable, args...]() mutable {
+		//This is a GCC workaround. MSVC and Clang can capture callable as-is.
+		auto job = [callable = callable, args...]() mutable {
 			callable(args...);
 		};
 		for(auto &i: job_queues) i->enqueue(job);
