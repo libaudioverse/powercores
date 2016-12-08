@@ -2,7 +2,7 @@ Powercores
 ==========
 
 [![Windows Build status](https://ci.appveyor.com/api/projects/status/i9weg9bwijybpxxt?svg=true)](https://ci.appveyor.com/project/camlorn/powercores)
-[![Linux Build Status](https://travis-ci.org/camlorn/powercores.svg?branch=master)](https://travis-ci.org/camlorn/powercores)
+[![Linux Build Status](https://travis-ci.org/libaudioverse/powercores.svg?branch=master)](https://travis-ci.org/camlorn/powercores)
 
 Higher level multithreading for C++.  This library uses C++11 features wherever possible.
 
